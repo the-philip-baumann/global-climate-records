@@ -1,7 +1,10 @@
 import streamlit as st
+import geopandas as gpd
 import pandas as pd
 import plotly.express as px
+import matplotlib.pyplot as plt
 import numpy as np
+from IPython.core.pylabtools import figsize
 
 from data_preprocessing import preprocess
 from climate_averages import aggregate_average_temperature, \
@@ -25,10 +28,13 @@ df_weather = df_weather[
 df_countries = pd.read_csv('./data/countries.csv')
 df_countries = df_countries[['country', 'capital', 'continent']]
 
+global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+
 df_cities = pd.read_csv("./data/cities.csv")
 df_cities = df_cities[['country', 'station_id']]
 
 df_countries_cities_weather = preprocess(df_weather, df_countries, df_cities)
+global_map['avg_temp'] = df_countries_cities_weather['avg_temp_c']
 
 dates = df_countries_cities_weather['date'].drop_duplicates().sort_values().dt.date
 df_continents = df_countries['continent'].dropna().unique()
@@ -66,6 +72,25 @@ country.selectbox(
     countries,
     key='selection_box_country',
 )
+
+
+
+if st.session_state.selection_box_country == 'All':
+    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    global_map.plot(column='avg_temp', ax=ax, legend=True, cmap='YlOrRd')
+    global_map.boundary.plot(ax=ax, linewidth=0.1, color='black')
+    ax.axis('off')
+    ax.set_title(f'Average Temperature Classification Of Each Country', fontsize=15)
+    st.pyplot(fig)
+else:
+    sub_fig, sub_ax = plt.subplots(1, 1, figsize=(1, 1))
+    sub_ax.set_title(f'Average Temperature Classification {st.session_state.selection_box_country}', fontsize=10)
+    selected_county_map = global_map[global_map['NAME'] == st.session_state.selection_box_country]
+    selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
+    selected_county_map.plot(column='avg_temp', ax=sub_ax, legend=True, cmap='YlOrRd')
+    sub_ax.axis('off')
+    st.pyplot(sub_fig)
+
 
 col_left, col_right = st.columns(2)
 
