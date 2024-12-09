@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import matplotlib.pyplot as plt
 import numpy as np
-from IPython.core.pylabtools import figsize
+
 
 from data_preprocessing import preprocess
 from climate_averages import aggregate_average_temperature, \
@@ -25,8 +25,8 @@ df_weather = pd.read_parquet('./data/daily_weather.parquet')
 df_weather = df_weather[
     ['station_id', 'city_name', 'date', 'season', 'avg_temp_c', 'min_temp_c', 'max_temp_c', 'precipitation_mm']]
 
-df_countries = pd.read_csv('./data/countries.csv')
-df_countries = df_countries[['country', 'capital', 'continent']]
+df_countries = pd.read_csv('./data/countries_extended.csv')
+df_countries = df_countries[['country', 'capital', 'continent', 'NAME']]
 
 global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
@@ -74,22 +74,22 @@ country.selectbox(
 )
 
 
+st.write('**Average Temperature Classification**')
 
 if st.session_state.selection_box_country == 'All':
-    fig, ax = plt.subplots(1, 1, figsize=(15, 10))
+    fig, ax = plt.subplots(1, 1, figsize=(40, 10))
     global_map.plot(column='avg_temp', ax=ax, legend=True, cmap='YlOrRd')
     global_map.boundary.plot(ax=ax, linewidth=0.1, color='black')
     ax.axis('off')
-    ax.set_title(f'Average Temperature Classification Of Each Country', fontsize=15)
     st.pyplot(fig)
 else:
-    sub_fig, sub_ax = plt.subplots(1, 1, figsize=(1, 1))
-    sub_ax.set_title(f'Average Temperature Classification {st.session_state.selection_box_country}', fontsize=10)
-    selected_county_map = global_map[global_map['NAME'] == st.session_state.selection_box_country]
+    country = df_countries[df_countries['country'] == st.session_state.selection_box_country]
+    selected_county_map = global_map[global_map['NAME'] == country['NAME'].values[0]]
+    sub_fig, sub_ax = plt.subplots(1, 1, figsize=(20, 20), dpi=10)
     selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
-    selected_county_map.plot(column='avg_temp', ax=sub_ax, legend=True, cmap='YlOrRd')
+    selected_county_map.plot(column='avg_temp', ax=sub_ax, cmap='YlOrRd')
     sub_ax.axis('off')
-    st.pyplot(sub_fig)
+    st.pyplot(sub_fig, use_container_width=True)
 
 
 col_left, col_right = st.columns(2)
