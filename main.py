@@ -28,13 +28,13 @@ df_weather = df_weather[
 df_countries = pd.read_csv('./data/countries_extended.csv')
 df_countries = df_countries[['country', 'capital', 'continent', 'NAME']]
 
-global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+df_global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
 df_cities = pd.read_csv("./data/cities.csv")
 df_cities = df_cities[['country', 'station_id']]
 
 df_countries_cities_weather = preprocess(df_weather, df_countries, df_cities)
-global_map['avg_temp'] = df_countries_cities_weather['avg_temp_c']
+df_global_map_with_temperatures = pd.merge(df_global_map, df_countries_cities_weather, on='NAME', how='left')
 
 dates = df_countries_cities_weather['date'].drop_duplicates().sort_values().dt.date
 df_continents = df_countries['continent'].dropna().unique()
@@ -73,21 +73,23 @@ country.selectbox(
     key='selection_box_country',
 )
 
-
 st.write('**Average Temperature Classification**')
 
+min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
+max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
+
 if st.session_state.selection_box_country == 'All':
-    fig, ax = plt.subplots(1, 1, figsize=(40, 10))
-    global_map.plot(column='avg_temp', ax=ax, legend=True, cmap='YlOrRd')
-    global_map.boundary.plot(ax=ax, linewidth=0.1, color='black')
+    fig, ax = plt.subplots(figsize=(40, 10))
+    df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap='YlOrRd', vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Average Temperature'}, missing_kwds={'color': 'grey'})
+    df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
     ax.axis('off')
     st.pyplot(fig)
 else:
     country = df_countries[df_countries['country'] == st.session_state.selection_box_country]
-    selected_county_map = global_map[global_map['NAME'] == country['NAME'].values[0]]
-    sub_fig, sub_ax = plt.subplots(1, 1, figsize=(20, 20), dpi=10)
+    selected_county_map = df_global_map_with_temperatures[df_global_map_with_temperatures['NAME'] == country['NAME'].values[0]]
+    sub_fig, sub_ax = plt.subplots(figsize=(20, 20))
     selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
-    selected_county_map.plot(column='avg_temp', ax=sub_ax, cmap='YlOrRd')
+    selected_county_map.plot(column='avg_temp_c', legend=True, ax=sub_ax, cmap='YlOrRd', vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Average Temperature'}, missing_kwds={'color': 'grey'})
     sub_ax.axis('off')
     st.pyplot(sub_fig, use_container_width=True)
 
