@@ -1,8 +1,7 @@
 import pandas as pd
 
 
-def aggregate_average_temperature(df_countries_cities_weather: pd.DataFrame,
-                                  dates: pd.Series) -> pd.DataFrame:
+def calculate_average_temperature(df_countries_cities_weather: pd.DataFrame, dates: pd.Series) -> pd.DataFrame:
     avg_temp_per_day_global = pd.DataFrame(index=['date'], columns=['avg_temp_c'])
     for date in dates:
         avg_temp_per_day_global.loc[date] = \
@@ -16,7 +15,7 @@ def aggregate_average_temperature_on_continent_scale(df_countries_cities_weather
     df_countries_cities_weather_in_continent = df_countries_cities_weather[
         df_countries_cities_weather['continent'] == continent]
 
-    return aggregate_average_temperature(df_countries_cities_weather_in_continent, dates)
+    return calculate_average_temperature(df_countries_cities_weather_in_continent, dates)
 
 
 def aggregate_average_precipitation(df_countries_cities_weather: pd.DataFrame,
