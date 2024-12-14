@@ -5,8 +5,6 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import numpy as np
 
-from data_preprocessing import preprocess
-
 # Streamlint Config
 st.set_page_config(layout="wide")
 
@@ -28,7 +26,6 @@ df_cities = pd.read_csv("./data/cities.csv")
 df_cities = df_cities[['country', 'station_id']]
 
 global_map = gpd.read_file("./data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
-
 
 # TODO: Das hier umstellen auf neues dataset
 # df_global_map_with_temperatures = pd.merge(df_global_map, df_weather, on='NAME', how='left')
@@ -92,7 +89,15 @@ st.write('**Average Temperature Classification**')
 #     sub_ax.axis('off')
 #     st.pyplot(sub_fig, use_container_width=True)
 
-
+continent_colors = {
+    "Africa": 'rgb(255, 140, 0)',
+    "Asia": 'rgb(255, 0, 0)',
+    "Europe": 'rgb(0, 128, 128)',
+    "North America": 'rgb(0, 255, 0)',
+    "South America": 'rgb(255, 255, 0)',
+    "Oceania": 'rgb(139, 69, 19)',
+    "open ocean": 'rgb(0, 0, 255)'
+}
 
 
 # Average Temperature
@@ -103,6 +108,11 @@ average_temp_line_chart = px.line(
     y='avg_temp_c',
     color='continent',
     title='Average Temperature',
+    color_discrete_map=continent_colors
+)
+average_temp_line_chart.update_layout(
+    xaxis_title='Year (1960 - 2024)',  # Rename x-axis
+    yaxis_title='Temperature in Celsius'   # Rename y-axis
 )
 
 # Average Precipitation
@@ -113,26 +123,56 @@ average_precipitation_line_chart = px.line(
     y='precipitation_mm',
     color='continent',
     title='Average Precipitation',
+    color_discrete_map=continent_colors
+)
+average_precipitation_line_chart.update_layout(
+    xaxis_title='Year (1960 - 2024)',  # Rename x-axis
+    yaxis_title='Precipitation in millimeters'   # Rename y-axis
 )
 
+colors_hot = [
+    'rgb(139, 0, 0)',
+    'rgb(255, 0, 0)',
+    'rgb(255, 69, 0)',
+    'rgb(255, 140, 0)',
+    'rgb(255, 204, 0)'
+]
 # Top ten warmest countries
-df_top_ten_warmest_countries = pd.read_csv('./data/country_overall/top_10_warmest_countries.csv')
+df_top_ten_warmest_countries = pd.read_csv('./data/country_overall/top_5_warmest_countries.csv')
 top_ten_warmest_countries_line_chart = px.line(
     df_top_ten_warmest_countries,
     x='date',
     y='max_temp_c',
     color='country',
-    title='Top 10 Warmest Countries',
+    title='Top 5 Warmest Countries',
+    color_discrete_sequence=colors_hot
+)
+top_ten_warmest_countries_line_chart.update_layout(
+    xaxis_title='Year (1960 - 2024)',  # Rename x-axis
+    yaxis_title='Temperature in Celsius'   # Rename y-axis
 )
 
+
 # Top ten coldest countries
-df_top_ten_coldest_countries = pd.read_csv('./data/country_overall/top_10_coldest_countries.csv')
+cold_colors = [
+    'rgb(173, 216, 230)',
+    'rgb(0, 191, 255)',
+    'rgb(135, 206, 235)',
+    'rgb(70, 130, 180)',
+    'rgb(0, 0, 139)',
+]
+df_top_ten_coldest_countries = pd.read_csv('./data/country_overall/top_5_coldest_countries.csv')
 top_ten_coldest_countries_line_chart = px.line(
     df_top_ten_coldest_countries,
     x='date',
     y='min_temp_c',
     color='country',
-    title='Top 10 Coldest Countries',
+    title='Top 5 Coldest Countries',
+    color_discrete_sequence=cold_colors,
+)
+top_ten_coldest_countries_line_chart.update_layout(
+    xaxis_title='Year (1960 - 2024)',  # Rename x-axis
+    yaxis_title='Temperature in Celsius'   # Rename y-axis
 )
 
 if st.session_state.selection_box_country == 'All':
@@ -142,6 +182,7 @@ if st.session_state.selection_box_country == 'All':
     col_right.plotly_chart(average_precipitation_line_chart)
     col_right.plotly_chart(top_ten_coldest_countries_line_chart)
 else:
+
     df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{st.session_state["selection_box_country"]}.csv')
     df_detail_temperatures = df_detail_temperatures_full[['date', 'avg_temp_c', 'min_temp_c', 'max_temp_c']]
     df_detail_temperatures = df_detail_temperatures.melt(id_vars=['date'], var_name='category', value_name='value')
@@ -160,5 +201,6 @@ else:
         x='date',
         y='precipitation_mm',
         title='Precipitation in mm',
+        color_discrete_sequence=cold_colors
     )
     col_right.plotly_chart(detail_precipitation_line_chart)
