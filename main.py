@@ -31,7 +31,7 @@ global_map = gpd.read_file("./data/ne_10m_admin_0_countries/ne_10m_admin_0_count
 
 
 # TODO: Das hier umstellen auf neues dataset
-df_global_map_with_temperatures = pd.merge(df_global_map, df_weather, on='NAME', how='left')
+# df_global_map_with_temperatures = pd.merge(df_global_map, df_weather, on='NAME', how='left')
 
 df_continents = df_countries['continent'].dropna().unique()
 df_continents_selections = df_continents.copy()
@@ -74,26 +74,26 @@ country.selectbox(
 
 st.write('**Average Temperature Classification**')
 
-min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
-max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
+# min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
+# max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
 
-if st.session_state.selection_box_country == 'All':
-    fig, ax = plt.subplots(figsize=(40, 10))
-    df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap='YlOrRd', vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Average Temperature'}, missing_kwds={'color': 'grey'})
-    df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
-    ax.axis('off')
-    st.pyplot(fig)
-else:
-    country = df_countries[df_countries['country'] == st.session_state.selection_box_country]
-    selected_county_map = df_global_map_with_temperatures[df_global_map_with_temperatures['NAME'] == country['NAME'].values[0]]
-    sub_fig, sub_ax = plt.subplots(figsize=(20, 20))
-    selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
-    selected_county_map.plot(column='avg_temp_c', legend=True, ax=sub_ax, cmap='YlOrRd', vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Average Temperature'}, missing_kwds={'color': 'grey'})
-    sub_ax.axis('off')
-    st.pyplot(sub_fig, use_container_width=True)
+# if st.session_state.selection_box_country == 'All':
+#     fig, ax = plt.subplots(figsize=(40, 10))
+#     df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap='YlOrRd', vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Average Temperature'}, missing_kwds={'color': 'grey'})
+#     df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
+#     ax.axis('off')
+#     st.pyplot(fig)
+# else:
+#     country = df_countries[df_countries['country'] == st.session_state.selection_box_country]
+#     selected_county_map = df_global_map_with_temperatures[df_global_map_with_temperatures['NAME'] == country['NAME'].values[0]]
+#     sub_fig, sub_ax = plt.subplots(figsize=(20, 20))
+#     selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
+#     selected_county_map.plot(column='avg_temp_c', legend=True, ax=sub_ax, cmap='YlOrRd', vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Average Temperature'}, missing_kwds={'color': 'grey'})
+#     sub_ax.axis('off')
+#     st.pyplot(sub_fig, use_container_width=True)
 
 
-col_left, col_right = st.columns(2)
+
 
 # Average Temperature
 df_aggregated_average_temp = pd.read_csv('./data/country_overall/average_temp_per_day_global.csv')
@@ -134,17 +134,6 @@ top_ten_coldest_countries_line_chart = px.line(
     color='country',
     title='Top 10 Coldest Countries',
 )
-
-
-
-# df_detail_precipitation = calculate_precipitation_mm_for_country(df_countries_cities_weather,
-#                                                                  st.session_state['selection_box_country'])
-# detail_precipitation_line_chart = px.line(
-#     df_detail_precipitation,
-#     x='date',
-#     y='precipitation_mm',
-#     title='Precipitation in mm',
-# )
 
 if st.session_state.selection_box_country == 'All':
     col_left.plotly_chart(average_temp_line_chart)
