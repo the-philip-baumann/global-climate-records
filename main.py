@@ -52,7 +52,7 @@ def create_country_map_plot():
                              vmax=max_temperature, legend_kwds={'label': 'Temperature in Celsius'},
                              missing_kwds={'color': 'grey'})
     sub_ax.axis('off')
-    return sub_fig
+    return sub_fig, selected_county_map['avg_temp_c'].values[0]
 
 def create_global_map_plot():
     fig, ax = plt.subplots(figsize=(40, 10))
@@ -76,7 +76,9 @@ st.write('**Average Temperature Classification**')
 if st.session_state.selection_box_country == 'All':
     st.pyplot(create_global_map_plot())
 else:
-    st.pyplot(create_country_map_plot(), use_container_width=True)
+    country_fig, country_avg_temperature = create_country_map_plot()
+    st.pyplot(country_fig, use_container_width=True)
+    st.write(f'Average Temperature: {country_avg_temperature} °C')
 
 col_left, col_right = st.columns(2)
 
