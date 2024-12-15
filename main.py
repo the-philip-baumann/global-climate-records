@@ -1,12 +1,11 @@
-import streamlit as st
 import geopandas as gpd
-import pandas as pd
-import plotly.express as px
-import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import numpy as np
-from io import BytesIO
+import pandas as pd
+import plotly.express as px
+import streamlit as st
 
 # Streamlint Config
 st.set_page_config(layout="wide")
@@ -17,58 +16,67 @@ if 'selection_box_continent' not in st.session_state:
 if 'selection_box_country' not in st.session_state:
     st.session_state.selection_box_country = 'All'
 
-df_weather = pd.read_parquet('./data/weather_compressed.parquet')
-df_weather = df_weather[['country', 'date', 'avg_temp_c', 'min_temp_c', 'max_temp_c', 'precipitation_mm']]
-
+# Data preparation
 df_countries = pd.read_csv('./data/countries_extended.csv')
-df_countries = df_countries[['country', 'capital', 'continent', 'NAME']]
+df_countries = df_countries[['country', 'continent', 'NAME']]
 
 df_global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
-df_cities = pd.read_csv("data/cities.csv")
-df_cities = df_cities[['country', 'station_id']]
+df_countries_avg_temperatures = pd.read_csv('./data/countries_avg_temperatures.csv')
+df_global_map_with_temperatures = pd.merge(df_global_map, df_countries_avg_temperatures, on='NAME', how='left')
 
-df_countries_avg_temperature = pd.read_csv('./data/countries_avg_temperatures.csv')
-df_global_map_with_temperatures = pd.merge(df_global_map, df_countries_avg_temperature, on='NAME', how='left')
+df_continents = pd.DataFrame(df_countries['continent'].dropna().unique(), columns=['continent'])
+continents = np.insert(df_continents['continent'], 0, 'All')
 
-df_continents = df_countries['continent'].dropna().unique()
-df_continents_selections = df_continents.copy()
-continents = np.insert(df_continents_selections, 0, 'All')
-
+# Global and country map definition
 def create_cmap():
     colors = ['#FFFFFF', '#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
     return mcolors.LinearSegmentedColormap.from_list('heatmap', colors)
 
-st.title(f'Global Climat Records 01.1960-09.2023 - ({st.session_state["selection_box_country"]})')
+min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
+max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
+cmap = create_cmap()
+
+def create_country_map_plot():
+    crossing_countries = ['New Zealand', 'Fiji', 'Russia', 'Kiribati']
+    selected_country = df_countries[df_countries['country'] == st.session_state.selection_box_country]
+    selected_county_map = df_global_map_with_temperatures[
+        df_global_map_with_temperatures['NAME'] == selected_country['NAME'].values[0]
+    ]
+    if st.session_state.selection_box_country in crossing_countries:
+        sub_fig, sub_ax = plt.subplots(figsize=(20, 5))
+    else:
+        sub_fig, sub_ax = plt.subplots(figsize=(70, 3))
+    selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
+    selected_county_map.plot(column='avg_temp_c', legend=True, ax=sub_ax, cmap=cmap, vmin=min_temperature,
+                             vmax=max_temperature, legend_kwds={'label': 'Temperature in Celsius'},
+                             missing_kwds={'color': 'grey'})
+    sub_ax.axis('off')
+    return sub_fig
+
+def create_global_map_plot():
+    fig, ax = plt.subplots(figsize=(40, 10))
+    df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap=cmap,
+                                         vmin=min_temperature, vmax=max_temperature,
+                                         legend_kwds={'label': 'Temperature in Celsius'},
+                                         missing_kwds={'color': 'grey'})
+    df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
+    ax.axis('off')
+    no_data_patch = mpatches.Patch(color='grey', label='No Data')
+    plt.legend(handles=[no_data_patch], loc='lower right')
+    return fig
+
+# Streamlit layout
+st.title(f'Global Climate Records 01.1960-09.2023 - ({st.session_state["selection_box_country"]})')
 
 container = st.container()
 
 st.write('**Average Temperature Classification**')
 
-min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
-max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
-
 if st.session_state.selection_box_country == 'All':
-    fig, ax = plt.subplots(figsize=(40, 10))
-    df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap=create_cmap(), vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Temperature in Celsius'}, missing_kwds={'color': 'grey'})
-    df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
-    ax.axis('off')
-    no_data_patch = mpatches.Patch(color='grey', label='No Data')
-    plt.legend(handles=[no_data_patch], loc='lower right')
-    st.pyplot(fig)
+    st.pyplot(create_global_map_plot())
 else:
-    crossing_countries = ['New Zealand', 'Fiji', 'Russia', 'Kiribati']
-    country = df_countries[df_countries['country'] == st.session_state.selection_box_country]
-    selected_county_map = df_global_map_with_temperatures[df_global_map_with_temperatures['NAME'] == country['NAME'].values[0]]
-    if st.session_state.selection_box_country in crossing_countries:
-        sub_fig, sub_ax = plt.subplots(figsize=(20, 5))
-    else:
-        sub_fig, sub_ax = plt.subplots(figsize=(70, 3))
-
-    selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
-    selected_county_map.plot(column='avg_temp_c', legend=True, ax=sub_ax, cmap=create_cmap(), vmin=min_temperature, vmax=max_temperature, legend_kwds={'label': 'Temperature in Celsius'}, missing_kwds={'color': 'grey'})
-    sub_ax.axis('off')
-    st.pyplot(sub_fig, use_container_width=True)
+    st.pyplot(create_country_map_plot(), use_container_width=True)
 
 col_left, col_right = st.columns(2)
 
@@ -76,6 +84,7 @@ col_left, col_right = st.columns(2)
 countries = df_countries[['country', 'continent']]
 df_all = pd.DataFrame([['All', '']], columns=countries.columns)
 countries = pd.concat([df_all, countries])
+
 
 def on_change_continent() -> None:
     global countries
@@ -108,7 +117,6 @@ continent_colors = {
     "open ocean": 'rgb(0, 0, 255)'
 }
 
-
 # Average Temperature
 df_aggregated_average_temp = pd.read_csv('./data/country_overall/average_temp_per_day_global.csv')
 average_temp_line_chart = px.line(
@@ -121,7 +129,7 @@ average_temp_line_chart = px.line(
 )
 average_temp_line_chart.update_layout(
     xaxis_title='Year',  # Rename x-axis
-    yaxis_title='Temperature in Celsius'   # Rename y-axis
+    yaxis_title='Temperature in Celsius'  # Rename y-axis
 )
 
 # Average Precipitation
@@ -136,16 +144,17 @@ average_precipitation_line_chart = px.line(
 )
 average_precipitation_line_chart.update_layout(
     xaxis_title='Year',  # Rename x-axis
-    yaxis_title='Precipitation in millimeters'   # Rename y-axis
+    yaxis_title='Precipitation in millimeters'  # Rename y-axis
 )
 
-colors_hot = [
+hot_colors = [
     'rgb(139, 0, 0)',
     'rgb(255, 0, 0)',
     'rgb(255, 69, 0)',
     'rgb(255, 140, 0)',
     'rgb(255, 204, 0)'
 ]
+
 # Top ten warmest countries
 df_top_ten_warmest_countries = pd.read_csv('./data/country_overall/top_5_warmest_countries.csv')
 top_ten_warmest_countries_line_chart = px.line(
@@ -154,13 +163,12 @@ top_ten_warmest_countries_line_chart = px.line(
     y='max_temp_c',
     color='country',
     title='Top 5 Warmest Countries',
-    color_discrete_sequence=colors_hot
+    color_discrete_sequence=hot_colors
 )
 top_ten_warmest_countries_line_chart.update_layout(
     xaxis_title='Year',  # Rename x-axis
-    yaxis_title='Temperature in Celsius'   # Rename y-axis
+    yaxis_title='Temperature in Celsius'  # Rename y-axis
 )
-
 
 # Top ten coldest countries
 cold_colors = [
@@ -181,7 +189,7 @@ top_ten_coldest_countries_line_chart = px.line(
 )
 top_ten_coldest_countries_line_chart.update_layout(
     xaxis_title='Year',  # Rename x-axis
-    yaxis_title='Temperature in Celsius'   # Rename y-axis
+    yaxis_title='Temperature in Celsius'  # Rename y-axis
 )
 
 if st.session_state.selection_box_country == 'All':
@@ -191,7 +199,7 @@ if st.session_state.selection_box_country == 'All':
     col_right.plotly_chart(average_precipitation_line_chart)
     col_right.plotly_chart(top_ten_coldest_countries_line_chart)
 else:
-    #Todo clarify if "NAME" or "country" should be used
+    # Todo clarify if "NAME" or "country" should be used
     box_country = df_countries[df_countries['country'] == st.session_state["selection_box_country"]]['NAME']
     df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{box_country.values[0]}.csv')
     df_detail_temperatures = df_detail_temperatures_full[['date', 'avg_temp_c', 'min_temp_c', 'max_temp_c']]
@@ -201,7 +209,11 @@ else:
         x='date',
         y='value',
         color='category',
-        title='Temperatures',
+        title='Temperatures'
+    )
+    detail_temperatures_line_chart.update_layout(
+        xaxis_title='Year', # Rename x-axis
+        yaxis_title='Temperature in Celsius' # Rename y-axis
     )
     col_left.plotly_chart(detail_temperatures_line_chart)
 
@@ -212,5 +224,9 @@ else:
         y='precipitation_mm',
         title='Precipitation in mm',
         color_discrete_sequence=cold_colors
+    )
+    detail_precipitation_line_chart.update_layout(
+        xaxis_title='Year', # Rename x-axis
+        yaxis_title='Precipitation in mm' # Rename y-axis
     )
     col_right.plotly_chart(detail_precipitation_line_chart)
