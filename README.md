@@ -1,4 +1,4 @@
-# global-climate-records
+# Global Climate Records
 
 ### Start the dashboard
 
