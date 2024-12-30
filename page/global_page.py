@@ -38,14 +38,14 @@ def global_page():
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=1,
-        title_text="Zeit"
+        title_text="Time"
     )
 
     subplots_top_row.update_xaxes(
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=2,
-        title_text="Zeit"
+        title_text="Time"
     )
 
     subplots_bottom_row = make_subplots(rows=1, cols=2, shared_xaxes=True, subplot_titles=['Warmest 5 Temperatures', 'Coldest 5 Temperatures'])
@@ -65,14 +65,14 @@ def global_page():
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=1,
-        title_text="Zeit"
+        title_text="Time"
     )
 
     subplots_bottom_row.update_xaxes(
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=2,
-        title_text="Zeit"
+        title_text="Time"
     )
 
     subplots_bottom_row.update_yaxes(title_text="Temperature [C°]")
@@ -89,7 +89,7 @@ def create_global_map_plot(df_global_map_with_temperatures: pd.DataFrame, min_te
     cmap = create_cmap()
     df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap=cmap,
                                          vmin=min_temperature, vmax=max_temperature,
-                                         legend_kwds={'label': 'Temperature in Celsius'},
+                                         legend_kwds={'label': 'Temperature [°C]'},
                                          missing_kwds={'color': 'grey'})
     df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
     ax.axis('off')
@@ -105,13 +105,13 @@ def create_cmap():
 
 
 continent_colors = {
-    "Africa": 'rgb(255, 140, 0)',
-    "Asia": 'rgb(255, 0, 0)',
-    "Europe": 'rgb(0, 128, 128)',
-    "North America": 'rgb(0, 255, 0)',
-    "South America": 'rgb(255, 255, 0)',
-    "Oceania": 'rgb(139, 69, 19)',
-    "open ocean": 'rgb(0, 0, 255)'
+    "Africa": '#e1bf92',
+    "Asia": '#D32F2F',
+    "Europe": '#4A90E2',
+    "North America": '#70C1B3',
+    "South America": '#FFD166',
+    "Oceania": '#F08A5D',
+    "open ocean": '#A3DFFB'
 }
 
 start_day = pd.to_datetime('2022-01-01')
@@ -174,7 +174,7 @@ def warmest_countries():
     )
     top_five_warmest_countries_line_chart.update_layout(
         xaxis_title='Year',
-        yaxis_title='Temperature in Celsius',
+        yaxis_title='Temperature [°C]',
         xaxis=dict(
             range=[start_day, end_day],
             fixedrange=False,

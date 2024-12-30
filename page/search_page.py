@@ -81,7 +81,7 @@ def create_country_map_plot(df_global_map_with_temperatures: pd.DataFrame, selec
         sub_fig, sub_ax = plt.subplots(figsize=(70, 3))
     selected_county_map.boundary.plot(ax=sub_ax, linewidth=0.1, color='black')
     selected_county_map.plot(column='avg_temp_c', legend=True, ax=sub_ax, cmap=cmap, vmin=min_temp,
-                             vmax=max_temp, legend_kwds={'label': 'Temperature in Celsius'},
+                             vmax=max_temp, legend_kwds={'label': 'Temperature [°C]'},
                              missing_kwds={'color': 'grey'})
     sub_ax.axis('off')
     return sub_fig, selected_county_map['avg_temp_c'].values[0]
@@ -127,7 +127,7 @@ def detail_graphs(df_countries: pd.DataFrame):
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=1,
-        title_text="Zeit"
+        title_text="Time"
     )
     subplots.update_yaxes(row=1, col=1, title_text="Temperature [C°]")
 
@@ -135,7 +135,7 @@ def detail_graphs(df_countries: pd.DataFrame):
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=2,
-        title_text="Zeit"
+        title_text="Time"
     )
     subplots.update_yaxes(row=1, col=2, title_text="Precipitation [mm]")
 
