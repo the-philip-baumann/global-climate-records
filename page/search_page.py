@@ -95,7 +95,7 @@ def create_cmap():
 
 
 def detail_graphs(df_countries: pd.DataFrame):
-    subplots = make_subplots(rows=1, cols=2, shared_xaxes=True)
+    subplots = make_subplots(rows=1, cols=2, shared_xaxes=True, subplot_titles=['Average Temperature', 'Average Precipitation'])
 
     box_country = df_countries[df_countries['country'] == st.session_state["selection_box_country"]]['NAME']
     df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{box_country.values[0]}.csv')
