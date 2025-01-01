@@ -20,7 +20,7 @@ def search_page():
 
     df_global_map_with_temperatures = pd.merge(df_global_map, df_countries_avg_temperatures, on='NAME', how='left')
 
-    df_countries = df_countries[['country', 'continent', 'NAME']]
+    df_countries = df_countries[df_countries_avg_temperatures['avg_temp_c'].notna()][['country', 'continent', 'NAME']]
 
     df_continents = pd.DataFrame(df_countries['continent'].dropna().unique(), columns=['continent'])
     continents = df_continents['continent']
