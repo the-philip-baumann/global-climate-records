@@ -50,7 +50,7 @@ def search_page():
         key='selection_box_country',
     )
 
-    selected_country = df_countries[df_countries['NAME'] == st.session_state.selection_box_country]['NAME'].values[0]
+    selected_country = df_countries[df_countries['country'] == st.session_state.selection_box_country]['NAME'].values[0]
     min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
     max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
 
@@ -97,8 +97,8 @@ def create_cmap():
 def detail_graphs(df_countries: pd.DataFrame):
     subplots = make_subplots(rows=1, cols=2, shared_xaxes=True)
 
-    box_country = df_countries[df_countries['NAME'] == st.session_state["selection_box_country"]][['NAME', 'continent']]
-    df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{box_country.values[0][0]}.csv')
+    box_country = df_countries[df_countries['country'] == st.session_state["selection_box_country"]]['NAME']
+    df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{box_country.values[0]}.csv')
     df_detail_temperatures = df_detail_temperatures_full[['date', 'avg_temp_c', 'min_temp_c', 'max_temp_c']]
     df_detail_temperatures = df_detail_temperatures.melt(id_vars=['date'], var_name='category', value_name='value')
 
