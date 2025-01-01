@@ -58,7 +58,7 @@ def global_page():
     for trace in coldest.data:
         subplots_bottom_row.add_trace(trace, row=1, col=2)
 
-    subplots_top_row.update_yaxes(title_text="Temperature [C°]", row=1, col=1)
+    subplots_top_row.update_yaxes(title_text="Temperature [°C]", row=1, col=1)
     subplots_top_row.update_yaxes(title_text="Precipitation [mm]", range=[0, 20], row=1, col=2)
 
     subplots_bottom_row.update_xaxes(
@@ -75,7 +75,7 @@ def global_page():
         title_text="Time"
     )
 
-    subplots_bottom_row.update_yaxes(title_text="Temperature [C°]")
+    subplots_bottom_row.update_yaxes(title_text="Temperature [°C]")
 
     subplots_top_row.update_traces(row=1, col=1, showlegend=False)
 
@@ -110,7 +110,8 @@ continent_colors = {
     "Europe": '#4A90E2',
     "North America": '#70C1B3',
     "South America": '#FFD166',
-    "Oceania": '#F08A5D'
+    "Oceania": '#F08A5D',
+    "all": '#341948'
 }
 
 start_day = pd.to_datetime('2022-01-01')

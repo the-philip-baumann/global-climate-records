@@ -150,7 +150,7 @@ def detail_graphs(df_countries: pd.DataFrame):
         col=1,
         title_text="Time"
     )
-    subplots.update_yaxes(row=1, col=1, title_text="Temperature [C°]")
+    subplots.update_yaxes(row=1, col=1, title_text="Temperature [°C]")
 
     subplots.update_xaxes(
         range=['2022-01-01', '2022-12-31'],
