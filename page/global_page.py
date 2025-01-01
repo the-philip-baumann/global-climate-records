@@ -100,7 +100,7 @@ def create_global_map_plot(df_global_map_with_temperatures: pd.DataFrame, min_te
 
 # Global and country map definition
 def create_cmap():
-    colors = ['#FFFFFF', '#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
+    colors = ['#A3DFFB', '#FFFFFF', '#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
     return mcolors.LinearSegmentedColormap.from_list('heatmap', colors)
 
 
@@ -110,8 +110,7 @@ continent_colors = {
     "Europe": '#4A90E2',
     "North America": '#70C1B3',
     "South America": '#FFD166',
-    "Oceania": '#F08A5D',
-    "open ocean": '#A3DFFB'
+    "Oceania": '#F08A5D'
 }
 
 start_day = pd.to_datetime('2022-01-01')
