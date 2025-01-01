@@ -90,7 +90,7 @@ def create_country_map_plot(df_global_map_with_temperatures: pd.DataFrame, selec
 
 
 def create_cmap():
-    colors = ['#FFFFFF', '#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
+    colors = ['#A3DFFB', '#FFFFFF', '#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
     return mcolors.LinearSegmentedColormap.from_list('heatmap', colors)
 
 
