@@ -56,8 +56,10 @@ def search_page():
 
     country_fig, country_avg_temperature = create_country_map_plot(df_global_map_with_temperatures,
                                                                    (selected_country, min_temperature, max_temperature))
+
+    st.title(f'{selected_country} - ({country_avg_temperature} °C)')
+
     st.pyplot(country_fig, use_container_width=True)
-    st.write(f'Average Temperature: {country_avg_temperature} °C')
 
     detail_graphs(df_countries)
 
@@ -95,8 +97,8 @@ def create_cmap():
 def detail_graphs(df_countries: pd.DataFrame):
     subplots = make_subplots(rows=1, cols=2, shared_xaxes=True)
 
-    box_country = df_countries[df_countries['NAME'] == st.session_state["selection_box_country"]]['NAME']
-    df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{box_country.values[0]}.csv')
+    box_country = df_countries[df_countries['NAME'] == st.session_state["selection_box_country"]][['NAME', 'continent']]
+    df_detail_temperatures_full = pd.read_csv(f'./data/country_detail/{box_country.values[0][0]}.csv')
     df_detail_temperatures = df_detail_temperatures_full[['date', 'avg_temp_c', 'min_temp_c', 'max_temp_c']]
     df_detail_temperatures = df_detail_temperatures.melt(id_vars=['date'], var_name='category', value_name='value')
 
@@ -108,6 +110,13 @@ def detail_graphs(df_countries: pd.DataFrame):
         title='Temperatures',
     )
 
+    average_temperature_of_continent = px.line(
+        df_detail_temperatures_full[['date', 'avg_temp_c_continent']],
+        x='date',
+        y='avg_temp_c_continent',
+    )
+    average_temperature_of_continent.update_traces(fill='tozeroy', fillcolor='rgba(0, 0, 0, 0.15)')
+
     df_detail_precipitation = df_detail_temperatures_full[['date', 'precipitation_mm']]
     detail_precipitation_line_chart = px.line(
         df_detail_precipitation,
@@ -116,11 +125,23 @@ def detail_graphs(df_countries: pd.DataFrame):
         title='Precipitation in mm',
     )
     detail_precipitation_line_chart.update_layout(showlegend=True)
+    average_precipitation_of_continent = px.line(
+        df_detail_temperatures_full[['date', 'precipitation_mm_continent']],
+        x='date',
+        y='precipitation_mm_continent',
+    )
+    average_precipitation_of_continent.update_traces(fill='tozeroy', fillcolor='rgba(0, 0, 139, 0.15)')
 
     for trace in detail_temperatures_line_chart.data:
         subplots.add_trace(trace, row=1, col=1)
 
+    for trace in average_temperature_of_continent.data:
+        subplots.add_trace(trace, row=1, col=1)
+
     for trace in detail_precipitation_line_chart.data:
+        subplots.add_trace(trace, row=1, col=2)
+
+    for trace in average_precipitation_of_continent.data:
         subplots.add_trace(trace, row=1, col=2)
 
     subplots.update_xaxes(
@@ -139,16 +160,18 @@ def detail_graphs(df_countries: pd.DataFrame):
     )
     subplots.update_yaxes(row=1, col=2, title_text="Precipitation [mm]")
 
-    subplots.data[0].name = 'Average Temperature [C°]'
-    subplots.data[1].name = 'Minimum Temperature [C°]'
-    subplots.data[2].name = 'Maximum Temperature [C°]'
-    subplots.data[3].name = 'Precipitation [mm]'
+    subplots.data[0].name = 'Average Temperature'
+    subplots.data[1].name = 'Minimum Temperature'
+    subplots.data[2].name = 'Maximum Temperature'
+    subplots.data[3].name = f'Average Temperature in {box_country.values[0][1]}'
+    subplots.data[4].name = 'Precipitation'
+    subplots.data[5].name = f'Average Precipitation in {box_country.values[0][1]}'
 
     subplots.data[0].line.color = "#808080"
     subplots.data[2].line.color = "#FF0000"
+    subplots.data[3].line.color = "rgba(0, 0, 0, 0.2)"
+    subplots.data[5].line.color = "rgba(0, 0, 139, 0.2)"
 
     subplots.update_traces(showlegend=True)
-
-    print(f'Labels: {subplots.data[3]}')
 
     st.plotly_chart(subplots)

@@ -24,7 +24,7 @@ def global_page():
 
     st.pyplot(create_global_map_plot(df_global_map_with_temperatures, min_temperature, max_temperature))
 
-    subplots_top_row = make_subplots(rows=1, cols=2, shared_xaxes=True, subplot_titles=['Average Temperature', 'Precipitation'])
+    subplots_top_row = make_subplots(rows=1, cols=2, shared_xaxes=True, subplot_titles=['Average Temperature', 'Average Precipitation'])
 
     average_temp = average_temperature()
     for trace in average_temp.data:
@@ -38,7 +38,7 @@ def global_page():
         range=['2022-01-01', '2022-12-31'],
         row=1,
         col=1,
-        title_text="Time"
+        title_text="Time",
     )
 
     subplots_top_row.update_xaxes(
