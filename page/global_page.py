@@ -10,7 +10,7 @@ from plotly.subplots import make_subplots
 
 def global_page():
     # Streamlit layout
-    st.title(f'Global Climate Records 01.1960-09.2023')
+    st.title(f'Global Climate Records 2022')
 
     df_global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
 
