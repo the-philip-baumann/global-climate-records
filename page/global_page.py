@@ -121,6 +121,7 @@ def global_choropleth_map():
     # Chart labeling
     temperature_choropleth_map.update_layout(
         title='Average Temperature Classification',
+        title_font_size=20,
         height=1000,
         coloraxis_colorbar=dict(
             title="Temperature [°C]",
