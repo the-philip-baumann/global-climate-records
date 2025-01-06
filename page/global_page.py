@@ -1,7 +1,4 @@
 import geopandas as gpd
-import matplotlib.colors as mcolors
-import matplotlib.patches as mpatches
-import matplotlib.pyplot as plt
 import pandas as pd
 import plotly.express as px
 import streamlit as st
@@ -12,19 +9,10 @@ def global_page():
     # Streamlit layout
     st.title(f'Global Climate Records 2022')
 
-    df_global_map = gpd.read_file("data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+    global_temperature_map = global_choropleth_map()
 
-    df_countries_avg_temperatures = pd.read_csv('./data/countries_avg_temperatures.csv')
-    df_global_map_with_temperatures = pd.merge(df_global_map, df_countries_avg_temperatures, on='NAME', how='left')
-
-    min_temperature = df_global_map_with_temperatures['avg_temp_c'].min()
-    max_temperature = df_global_map_with_temperatures['avg_temp_c'].max()
-
-    st.write('**Average Temperature Classification**')
-
-    st.pyplot(create_global_map_plot(df_global_map_with_temperatures, min_temperature, max_temperature))
-
-    subplots_top_row = make_subplots(rows=1, cols=2, shared_xaxes=True, subplot_titles=['Average Temperature', 'Average Precipitation'])
+    subplots_top_row = make_subplots(rows=1, cols=2, shared_xaxes=True,
+                                     subplot_titles=['Average Temperature', 'Average Precipitation'])
 
     average_temp = average_temperature()
     for trace in average_temp.data:
@@ -48,7 +36,8 @@ def global_page():
         title_text="Time"
     )
 
-    subplots_bottom_row = make_subplots(rows=1, cols=2, shared_xaxes=True, subplot_titles=['Warmest 5 Temperatures', 'Coldest 5 Temperatures'])
+    subplots_bottom_row = make_subplots(rows=1, cols=2, shared_xaxes=True,
+                                        subplot_titles=['Warmest 5 Temperatures', 'Coldest 5 Temperatures'])
 
     warmest = warmest_countries()
     for trace in warmest.data:
@@ -79,30 +68,22 @@ def global_page():
 
     subplots_top_row.update_traces(row=1, col=1, showlegend=False)
 
+    st.plotly_chart(global_temperature_map, use_container_width=True)
     st.plotly_chart(subplots_top_row)
     st.plotly_chart(subplots_bottom_row)
 
-
-def create_global_map_plot(df_global_map_with_temperatures: pd.DataFrame, min_temperature: float,
-                           max_temperature: float):
-    fig, ax = plt.subplots(figsize=(40, 10))
-    cmap = create_cmap()
-    df_global_map_with_temperatures.plot(column='avg_temp_c', ax=ax, legend=True, cmap=cmap,
-                                         vmin=min_temperature, vmax=max_temperature,
-                                         legend_kwds={'label': 'Temperature [°C]'},
-                                         missing_kwds={'color': 'grey'})
-    df_global_map_with_temperatures.boundary.plot(ax=ax, linewidth=0.1, color='black')
-    ax.axis('off')
-    no_data_patch = mpatches.Patch(color='grey', label='No Data')
-    plt.legend(handles=[no_data_patch], loc='lower right')
-    return fig
-
-
-# Global and country map definition
-def create_cmap():
-    colors = ['#A3DFFB', '#FFFFFF', '#FFEDA0', '#FED976', '#FEB24C', '#FD8D3C', '#FC4E2A', '#E31A1C', '#BD0026', '#800026']
-    return mcolors.LinearSegmentedColormap.from_list('heatmap', colors)
-
+map_temperature_colors = [
+    (0.00, '#A3DFFB'),
+    (1 / 9, '#FFFFFF'),
+    (2 / 9, '#FFEDA0'),
+    (3 / 9, '#FED976'),
+    (4 / 9, '#FEB24C'),
+    (5 / 9, '#FD8D3C'),
+    (6 / 9, '#FC4E2A'),
+    (7 / 9, '#E31A1C'),
+    (8 / 9, '#BD0026'),
+    (9 / 9, '#800026')
+]
 
 continent_colors = {
     "Africa": '#e1bf92',
@@ -118,6 +99,68 @@ start_day = pd.to_datetime('2022-01-01')
 end_day = pd.to_datetime('2022-12-31')
 
 x_range = st.session_state.get("x_range", [start_day, end_day])
+
+def global_choropleth_map():
+    # Data Preparation
+    df_global_map = gpd.read_file("data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp")
+    df_countries_avg_temperatures = pd.read_csv('./data/countries_avg_temperatures.csv')
+    df_global_map_with_temperatures = pd.merge(df_global_map, df_countries_avg_temperatures, on='NAME', how='left')
+
+    # Define Global Map
+    temperature_choropleth_map = px.choropleth(df_global_map_with_temperatures,
+                                               geojson=df_global_map.geometry,
+                                               locations=df_global_map.ISO_A3_EH,
+                                               color='avg_temp_c',
+                                               color_continuous_scale=map_temperature_colors,
+                                               locationmode='ISO-3',
+                                               hover_data={
+                                                   'NAME': True,
+                                                   'avg_temp_c': True,
+                                               })
+
+    # Chart labeling
+    temperature_choropleth_map.update_layout(
+        title='Average Temperature Classification',
+        height=1000,
+        coloraxis_colorbar=dict(
+            title="Temperature [°C]",
+            titleside="right",
+            title_font=dict(size=20),
+            tickfont=dict(size=20),
+            thickness=50,
+            ticklen=15
+        )
+    )
+
+    # Handle countries with no data
+    temperature_choropleth_map.update_geos(
+        projection_type="natural earth",
+        showland=True,
+        landcolor="#636363",
+        resolution=50,
+        showocean=True,
+        oceancolor='#eeeeee'
+    )
+
+
+    temperature_choropleth_map.add_shape(
+        type="rect",
+        x0=0.99, y0=0.125,
+        x1=1.01, y1=0.14,
+        line=dict(color="#636363"),
+        fillcolor="#636363",
+    )
+
+    temperature_choropleth_map.add_annotation(
+        x=0.95,
+        y=0.15,
+        text="No Data:",
+        showarrow=False,
+        xanchor="center",
+        yanchor="top",
+        font=dict(size=18, color="black")
+    )
+    return temperature_choropleth_map
 
 
 def average_temperature():

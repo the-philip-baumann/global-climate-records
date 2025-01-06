@@ -2,8 +2,16 @@
 
 ### Start the dashboard
 
-#### Install the requirements
+Navigate to the project root
+
+Install the requirements
+
 `pip3 install -r requirements.txt`
 
-#### Run Streamlit
-`streamlit run main.py `
+Run Streamlit
+
+`streamlit run main.py`
+
+
+
+

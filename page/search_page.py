@@ -1,5 +1,4 @@
 from typing import Tuple
-
 import geopandas as gpd
 import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
@@ -14,7 +13,7 @@ countries_continent = pd.DataFrame()
 def search_page():
     global countries_continent
 
-    df_global_map = gpd.read_file("./data/ne_10m_admin_0_countries/ne_10m_admin_0_countries.shp")
+    df_global_map = gpd.read_file("./data/ne_50m_admin_0_countries/ne_50m_admin_0_countries.shp")
     df_countries_avg_temperatures = pd.read_csv('./data/countries_avg_temperatures.csv')
     df_countries = pd.read_csv('./data/countries_extended.csv')
 
